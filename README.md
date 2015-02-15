@@ -22,4 +22,3 @@ Members of the scrum team that are present at the planning will be able to join 
 * Bargraph showing the spread.
 * Median and avg estimate.
 * Is shown until host starts a discussion timer or a new round of estimates.
-

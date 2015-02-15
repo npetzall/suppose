@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Suppose - ScrUm Planning POker SystEm</title>
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+</head>
+<body>
+  <script type="text/x-handlebars">
+    {{outlet}}
+  </script>
+
+  <script type="text/x-handlebars" id="index">
+    {{#link-to 'startSession' }}Start Session{{/link-to}}
+    {{#link-to 'joinSession' }}Join Session{{/link-to}}
+  </script>
+
+  <script type="text/x-handlebars" id="startSession">
+    <h1>StartSession</h1>
+    {{input type="text" id="nickname" placeholder="Your nickname" value=nickname}}
+    {{input type="text" id="hostKey" placeholder="Your host key" value=hostKey}}
+    <button id="startSession" {{action "startSession"}}>Start Planning Session</button>
+  </script>
+
+  <script type="text/x-handlebars" id="joinSession">
+    <h1>JoinSession</h1>
+    {{input type="text" id="nickname" placeholder="Your nickname" value=nickname}}
+    {{input type="text" id="sessionToken" placeholder="Enter session token" value=sessionToken}}
+    <button id="joinSession" {{action "joinSession"}}>Join a Planning Session</button>
+  </script>
+
+  <script type="text/x-handlebars" id="participant">
+    <h1>Participant in {{controllers.session.sessionToken}}</h1>
+    {{#if controllers.session.isHost}}
+      {{partial 'hostMenu'}}
+    {{else}}
+      {{partial 'participantMenu'}}
+    {{/if}}
+    {{outlet}}
+  </script>
+
+  <script type="text/x-handlebars" id="hostMenu">
+    <h1>HostMenu</h1>
+    <button id="startCountdown" {{action "startCountdown"}}>Start countdown</button>
+    <button id="startEstimate" {{action "startEstimate"}}>Start estimating</button>
+  </script>
+
+  <script type="text/x-handlebars" id="participantMenu">
+    <h1>ParticipantMenu</h1>
+    <button id="leave" {{action "leave"}}>Leave</button>
+    <button id="requestBreak" {{action "requestBreak"}}>Request a break</button>
+    {{#if noHost}}
+      <button id="becomeHost" {{action "becomeHost"}}>Become host</button>
+    {{/if}}
+  </script>
+
+  <script type="text/x-handlebars" id="participantCountdown">
+    <h1>ParticipantCountdown</h1>
+  </script>
+
+  <script type="text/x-handlebars" id="participantEstimate">
+    <h1>ParticipantEstimate</h1>
+    {{#each val in model}}
+      <button {{action "estimate" val}}>{{val}}</button>
+    {{/each}}
+  </script>
+
+  <script type="text/x-handlebars" id="participantEstimateResults">
+    <h1>ParticipantEstimateResult</h1>
+  </script>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/libs/jquery-1.10.2.js"></script>
+  <script src="js/libs/ember-template-compiler-1.10.0.js"></script>
+  <script src="js/libs/ember-1.10.0.debug.js"></script>
+  <script src="js/libs/ember-sockets-0.6.10.js"></script>
+  <script src="js/app.js"></script>
+  <!-- to activate the test runner, add the "?test" query string parameter -->
+  <script src="tests/runner.js"></script>
+</body>
+</html>
