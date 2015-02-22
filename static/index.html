@@ -69,6 +69,9 @@
 
   <script type="text/x-handlebars" id="participantEstimateResults">
     <h1>ParticipantEstimateResult</h1>
+    {{#each item in controllers.participant.estimateResults.values}}
+      {{log 'item is' item}}
+    {{/each}}
   </script>
 
   <script src="/socket.io/socket.io.js"></script>

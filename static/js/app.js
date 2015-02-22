@@ -12,7 +12,7 @@ SupposeApp.Router.map(function () {
   this.resource('participant', function() {
     this.resource('participantCountdown');
     this.resource('participantEstimate');
-    this.resource('participantEstimateResult');
+    this.resource('participantEstimateResults');
   });
 });
 
@@ -72,6 +72,9 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
 
 SupposeApp.ParticipantController = Ember.Controller.extend({
   needs: 'session',
+  countdownTimeout: null,
+  estimateTimeout: null,
+  estimateResults: null,
   noHost: false,
   actions: {
     startCountdown: function () {
@@ -82,13 +85,16 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
     }
   },
   sockets: {
-    startCountdown: function(duration) {
+    startCountdown: function(timeout) {
+      this.set('countdownTimeout', timeout);
       this.transitionToRoute('participantCountdown');
     },
-    startEstimate: function(duration) {
+    startEstimate: function(timeout) {
+      this.set('estimateTimeout', timeout);
       this.transitionToRoute('participantEstimate');
     },
-    showResults: function(results) {
+    estimateResults: function(results) {
+      this.set('estimateResults', results);
       this.transitionToRoute('participantEstimateResults');
     },
     noHost: function(value) {
@@ -104,6 +110,7 @@ SupposeApp.ParticipantEstimateRoute = Ember.Route.extend({
 })
 
 SupposeApp.ParticipantEstimateController = Ember.Controller.extend({
+  needs: 'participant',
   actions: {
     estimate: function(val) {
       this.socket.emit('estimate', val, function(err) {
@@ -115,4 +122,8 @@ SupposeApp.ParticipantEstimateController = Ember.Controller.extend({
       }.bind(this));
     }
   }
+})
+
+SupposeApp.ParticipantEstimateResultsController = Ember.Controller.extend({
+  needs: 'participant'
 })

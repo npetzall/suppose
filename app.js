@@ -60,12 +60,15 @@ io.on('connection', function (socket) {
         planningSession.registerEstimate(users[socket.id], estimate, fn);
       } else {
         fn({error: "noPlanningSession", msg:"The planning session has expired or does not exists"})
-        console.log("Connection: " + socket.id + "/" + data.nickname + " tried to make an estimate in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to make an estimate in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
       }
     });
     socket.on('disconnect', function() {
       if (users[socket.id].sessionToken) {
-        planningSessionStore.getPlanningSession(users[socket.id]).removeParticipant(users[socket.id]);
+        planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+        if (planningSession) {
+          planningSession.removeParticipant(users[socket.id]);
+        }
       }
       delete users[socket.id];
       console.log("Disconnected: " + socket.id);
