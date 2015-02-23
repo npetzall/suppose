@@ -5,7 +5,7 @@
   <title>Suppose - ScrUm Planning POker SystEm</title>
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
 </head>
 <body>
   <script type="text/x-handlebars">
@@ -39,6 +39,7 @@
       {{partial 'participantMenu'}}
     {{/if}}
     {{outlet}}
+    {{outlet 'modal'}}
   </script>
 
   <script type="text/x-handlebars" id="hostMenu">
@@ -51,9 +52,9 @@
     <h1>ParticipantMenu</h1>
     <button id="leave" {{action "leave"}}>Leave</button>
     <button id="requestBreak" {{action "requestBreak"}}>Request a break</button>
-    {{#if noHost}}
-      <button id="becomeHost" {{action "becomeHost"}}>Become host</button>
-    {{/if}}
+    {{#unless hasHost}}
+      <button id="showBecomeHost" {{action "showBecomeHost"}}>Become host</button>
+    {{/unless}}
   </script>
 
   <script type="text/x-handlebars" id="participantCountdown">
@@ -74,12 +75,28 @@
     {{/each}}
   </script>
 
+  <script type="text/x-handlebars" id="becomeHost">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="button close btn-dismiss" {{action 'closeBecomeHost'}}>x</div>
+          <h4 class="modal-title">Become host</h4>
+        </div>
+
+        <div class="modal-body">
+          {{input type="text" id="hostKey" placeholder="Enter host key" action="becomeHost" value=hostKey autofocus="true"}}
+        </div>
+      </div>
+    </div>
+  </script>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/libs/jquery-1.10.2.js"></script>
   <script src="js/libs/ember-template-compiler-1.10.0.js"></script>
   <script src="js/libs/ember-1.10.0.debug.js"></script>
   <script src="js/libs/ember-sockets-0.6.10.js"></script>
   <script src="js/app.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
   <!-- to activate the test runner, add the "?test" query string parameter -->
   <script src="tests/runner.js"></script>
 </body>

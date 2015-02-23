@@ -4,6 +4,7 @@ window.SupposeApp = Ember.Application.create({
       controllers: ['startSession','joinSession','participant'],
       autoConnect: false
     })
+
 });
 
 SupposeApp.Router.map(function () {
@@ -16,9 +17,21 @@ SupposeApp.Router.map(function () {
   });
 });
 
+SupposeApp.ApplicationRoute = Ember.Route.extend({
+  actions: {
+    showBecomeHost: function () {
+      return this.render('becomeHost', {into: 'participant', outlet: 'modal'});
+    },
+    closeBecomeHost: function() {
+      return this.disconnectOutlet({outlet: 'modal', parentView: 'participant'});
+    }
+  }
+});
+
 SupposeApp.SessionController = Ember.Controller.extend({
   nickname: null,
   isHost: false,
+  hasHost: true,
   sessionToken: null
 })
 
@@ -49,6 +62,7 @@ SupposeApp.StartSessionController = Ember.Controller.extend({
 SupposeApp.JoinSessionController = Ember.Controller.extend({
   needs: 'session',
   nickname: Ember.computed.alias('controllers.session.nickname'),
+  hasHost: Ember.computed.alias('controllers.session.hasHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   actions: {
     joinSession: function() {
@@ -59,10 +73,11 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
         return;
       }
       this.socket.connect({});
-      this.socket.emit('joinSession', {nickname: nickname, sessionToken: sessionToken}, function(err) {
+      this.socket.emit('joinSession', {nickname: nickname, sessionToken: sessionToken}, function(err, hasHost) {
         if(err) {
           //Show something about duplicate nick or missing session.
         } else {
+          this.set('hasHost', hasHost);
           this.transitionToRoute('participant');
         }
       }.bind(this));
@@ -70,12 +85,43 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
   }
 });
 
+SupposeApp.BecomeHostView = Ember.View.extend({
+  attributeBindings: ['data-backdrop'],
+  'data-backdrop': 'static',
+  classNames: ['modal','fade'],
+  didInsertElement: function() {
+    this.$().modal('show');
+  },
+  willDestroyElement: function() {
+    this.$().modal('hide');
+  }
+});
+
+SupposeApp.BecomeHostController = Ember.Controller.extend({
+  needs: 'session',
+  isHost: Ember.computed.alias('controllers.session.isHost'),
+  hostKey: null,
+  actions: {
+    becomeHost: function() {
+      var hostKey = this.get('hostKey');
+      if (!hostKey.trim()) {
+        return;
+      }
+      this.socket.emit('becomeHost', {hostKey: hostKey}, function(isHost) {
+          this.set('isHost', isHost);
+          this.send('closeBecomeHost');
+          this.transitionToRoute('participant');
+      }.bind(this));
+    }
+  }
+})
+
 SupposeApp.ParticipantController = Ember.Controller.extend({
   needs: 'session',
   countdownTimeout: null,
   estimateTimeout: null,
   estimateResults: null,
-  noHost: false,
+  hasHost: Ember.computed.alias('controllers.session.hasHost'),
   actions: {
     startCountdown: function () {
 
@@ -97,8 +143,8 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
       this.set('estimateResults', results);
       this.transitionToRoute('participantEstimateResults');
     },
-    noHost: function(value) {
-      this.set('noHost', value);
+    hasHost: function(value) {
+      this.set('hasHost', value);
     }
   }
 });

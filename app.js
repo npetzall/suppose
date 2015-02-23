@@ -27,9 +27,11 @@ io.on('connection', function (socket) {
       var planningSession = planningSessionStore.getPlanningSession(data.sessionToken);
       if (planningSession) {
         if (planningSession.isNicknameAvaliable(data.nickname)) {
-          users[socket.id] = planningSession.addParticipant(users[socket.id]);
+          users[socket.id].sessionToken = data.sessionToken;
+          users[socket.id].nickname = data.nickname;
+          planningSession.addParticipant(users[socket.id]);
           socket.join(planningSession.sessionToken);
-          fn();
+          fn(null, planningSession.hasHost());
           console.log("Connection: " + socket.id + "/" + data.nickname + " joined planning session with token: " + data.sessionToken);
         } else {
           fn({error: "nicknameInUser", msg:"The nickname you have entered is already in use, enter another nickname"})
@@ -38,6 +40,18 @@ io.on('connection', function (socket) {
       } else {
         fn({error: "noPlanningSession", msg:"The planning session has expired or does not exists, enter another session token"})
         console.log("Connection: " + socket.id + "/" + data.nickname + " tried to access planning session with token: " + data.sessionToken + " which doesnt exist");
+      }
+    });
+    socket.on('becomeHost', function(data, fn) {
+      if (data || data.hostKey) {
+        var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+        if (planningSession) {
+          fn(planningSession.setNewHost(users[socket.id], data.hostKey));
+        } else {
+          fn(false);
+        }
+      } else {
+        fn(false);
       }
     });
     socket.on('startEstimate', function(data) {
