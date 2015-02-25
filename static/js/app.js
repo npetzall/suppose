@@ -32,7 +32,8 @@ SupposeApp.SessionController = Ember.Controller.extend({
   nickname: null,
   isHost: false,
   hasHost: true,
-  sessionToken: null
+  sessionToken: null,
+  participants: Ember.ArrayProxy.create({content: []})
 })
 
 SupposeApp.StartSessionController = Ember.Controller.extend({
@@ -41,6 +42,7 @@ SupposeApp.StartSessionController = Ember.Controller.extend({
   isHost: Ember.computed.alias('controllers.session.isHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   hostKey: '',
+  participants: Ember.computed.alias('controllers.session.participants'),
   actions: {
     startSession: function() {
       var nickname = this.get('nickname');
@@ -53,6 +55,7 @@ SupposeApp.StartSessionController = Ember.Controller.extend({
       this.socket.emit('startSession', {nickname: nickname, hostKey: hostKey}, function(data) {
         this.set('isHost', data.isHost);
         this.set('sessionToken', data.sessionToken);
+        this.get('participants').set('content', data.participants);
         this.transitionToRoute('participant');
       }.bind(this));
     }
@@ -64,6 +67,7 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
   nickname: Ember.computed.alias('controllers.session.nickname'),
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
+  participants: Ember.computed.alias('controllers.session.participants'),
   actions: {
     joinSession: function() {
       var nickname = this.get('nickname');
@@ -73,11 +77,12 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
         return;
       }
       this.socket.connect({});
-      this.socket.emit('joinSession', {nickname: nickname, sessionToken: sessionToken}, function(err, hasHost) {
+      this.socket.emit('joinSession', {nickname: nickname, sessionToken: sessionToken}, function(err, data) {
         if(err) {
           //Show something about duplicate nick or missing session.
         } else {
-          this.set('hasHost', hasHost);
+          this.set('hasHost', data.hasHost);
+          this.get('participants').set('content', data.participants);
           this.transitionToRoute('participant');
         }
       }.bind(this));
@@ -124,6 +129,7 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
   isHost: Ember.computed.alias('controllers.session.isHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
+  participants: Ember.computed.alias('controllers.session.participants'),
   actions: {
     startCountdown: function () {
 
@@ -135,6 +141,7 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
       this.socket.emit('leave');
       this.set('isHost', false);
       this.set('sessionToken', null);
+      this.set('participants', []);
       this.transitionToRoute('index');
     }
   },
@@ -153,6 +160,18 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
     },
     hasHost: function(value) {
       this.set('hasHost', value);
+    },
+    participantChange: function(changeEvent) {
+      if (changeEvent.nickname && changeEvent.changeType) {
+        var participants = this.get('participants');
+        if (changeEvent.changeType === "joined") {
+          participants.addObject(changeEvent.nickname);
+        } else if (changeEvent.changeType === "left") {
+          participants.removeObject(changeEvent.nickname);
+        } else {
+          console.log("Unknown changeType: " + data.changeType);
+        }
+      }
     }
   }
 });

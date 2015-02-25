@@ -57,6 +57,16 @@
             <li><a href="#" {{action "startCountdown"}} >Start countdown</a></li>
             <li><a href="#" {{action "startEstimate"}} >Start estimating</a></li>
             {{/if}}
+            <li class="dropdown">
+              <a href="#" class="dopdown-toggle" data-toggle="dropdown" role="button">Participants
+                <span class="badge">{{participants.length}}</span>
+              </a>
+              <ul class="dropdown-menu" role="menu">
+                {{#each participant in participants}}
+                  <li><p class="navbar-text">{{participant}}</p></li>
+                {{/each}}
+              </ul>
+            </li>
             {{#unless hasHost}}
             <li><a href="#" {{action "showBecomeHost"}} >Become host</a></li>
             {{/unless}}

@@ -20,7 +20,7 @@ io.on('connection', function (socket) {
       users[socket.id] = planningSessionStore.createPlanningSession(users[socket.id], data);
       var sessionToken = users[socket.id].sessionToken;
       socket.join(sessionToken);
-      fn({isHost:true, sessionToken: sessionToken });
+      fn({isHost:true, sessionToken: sessionToken, participants: [users[socket.id].nickname] });
       console.log("Planning session: " + sessionToken +  " started by: " + users[socket.id].nickname);
     });
     socket.on('joinSession', function(data, fn) {
@@ -31,7 +31,7 @@ io.on('connection', function (socket) {
           users[socket.id].nickname = data.nickname;
           planningSession.addParticipant(users[socket.id]);
           socket.join(planningSession.sessionToken);
-          fn(null, planningSession.hasHost());
+          fn(null, { hasHost:planningSession.hasHost(), participants: planningSession.getParticipantNicknames() });
           console.log("Connection: " + socket.id + "/" + data.nickname + " joined planning session with token: " + data.sessionToken);
         } else {
           fn({error: "nicknameInUser", msg:"The nickname you have entered is already in use, enter another nickname"})
