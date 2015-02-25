@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Suppose - ScrUm Planning POker SystEm</title>
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/style.css">
@@ -32,29 +34,38 @@
   </script>
 
   <script type="text/x-handlebars" id="participant">
-    <h1>Participant in {{controllers.session.sessionToken}}</h1>
-    {{#if controllers.session.isHost}}
-      {{partial 'hostMenu'}}
-    {{else}}
-      {{partial 'participantMenu'}}
-    {{/if}}
+    {{partial 'menu'}}
     {{outlet}}
     {{outlet 'modal'}}
   </script>
 
-  <script type="text/x-handlebars" id="hostMenu">
-    <h1>HostMenu</h1>
-    <button id="startCountdown" {{action "startCountdown"}}>Start countdown</button>
-    <button id="startEstimate" {{action "startEstimate"}}>Start estimating</button>
-  </script>
-
-  <script type="text/x-handlebars" id="participantMenu">
-    <h1>ParticipantMenu</h1>
-    <button id="leave" {{action "leave"}}>Leave</button>
-    <button id="requestBreak" {{action "requestBreak"}}>Request a break</button>
-    {{#unless hasHost}}
-      <button id="showBecomeHost" {{action "showBecomeHost"}}>Become host</button>
-    {{/unless}}
+  <script type="text/x-handlebars" id="menu">
+    <nav class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-menu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <p class="navbar-brand">{{controllers.session.sessionToken}}</p>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+          <ul class="nav navbar-nav">
+            {{#if controllers.session.isHost}}
+            <li><a href="#" {{action "startCountdown"}} >Start countdown</a></li>
+            <li><a href="#" {{action "startEstimate"}} >Start estimating</a></li>
+            {{/if}}
+            {{#unless hasHost}}
+            <li><a href="#" {{action "showBecomeHost"}} >Become host</a></li>
+            {{/unless}}
+            <li><a href="#" {{action "requestBreak"}} >Request a break</a></li>
+            <li><a href="#" {{action "leave"}} >Leave</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
   </script>
 
   <script type="text/x-handlebars" id="participantCountdown">

@@ -77,6 +77,20 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to make an estimate in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
       }
     });
+    socket.on('leave', function() {
+      if (users[socket.id].sessionToken) {
+        var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+        if (planningSession) {
+          planningSession.removeParticipant(users[socket.id]);
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " left planning session with token: " + planningSession.sessionToken);
+        } else {
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to leave planning session with token: " + users[socket.id].sessionToken + " which does not exist");
+        }
+        delete users[socket.id].sessionToken;
+      } else {
+        console.log("Connection: " + socket.id + " tried to leave planning session but user doesn't have a sessionToken");
+      }
+    });
     socket.on('disconnect', function() {
       if (users[socket.id].sessionToken) {
         planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);

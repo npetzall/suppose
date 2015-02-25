@@ -121,6 +121,8 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
   countdownTimeout: null,
   estimateTimeout: null,
   estimateResults: null,
+  isHost: Ember.computed.alias('controllers.session.isHost'),
+  sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
   actions: {
     startCountdown: function () {
@@ -128,6 +130,12 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
     },
     startEstimate: function() {
       this.socket.emit('startEstimate', 10);
+    },
+    leave: function() {
+      this.socket.emit('leave');
+      this.set('isHost', false);
+      this.set('sessionToken', null);
+      this.transitionToRoute('index');
     }
   },
   sockets: {
