@@ -141,7 +141,7 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
       this.socket.emit('leave');
       this.set('isHost', false);
       this.set('sessionToken', null);
-      this.set('participants', []);
+      this.get('participants').clear();
       this.transitionToRoute('index');
     }
   },
