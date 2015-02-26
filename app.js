@@ -3,7 +3,7 @@ var socketio = require('socket.io');
 var serveStatic = require('serve-static');
 var finalhandler = require('finalhandler');
 
-var serve = serveStatic('static');
+var serve = serveStatic(__dirname + '/static');
 var server = http.createServer(function(req,res) {
   var done=finalhandler(req,res);
   serve(req,res,done);
