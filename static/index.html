@@ -49,7 +49,7 @@
           <ul class="nav navbar-nav">
             {{#if controllers.session.isHost}}
             <li><a href="#" {{action "showDialog" "countdown"}} >Start countdown</a></li>
-            <li><a href="#" {{action "startEstimate"}} >Start estimating</a></li>
+            <li><a href="#" {{action "showDialog" "startEstimationRound"}} >Start estimating</a></li>
             {{/if}}
             <li class="dropdown">
               <a href="#" class="dopdown-toggle" data-toggle="dropdown" role="button">Participants
@@ -116,7 +116,7 @@
         {{input required="true" class="form-control" placeholder="Your nickname" value=nickname}}
         {{input required="true" class="form-control" action="createSession" placeholder="Enter host key" value=hostKey}}
       </div>
-      <button id="createSession" class="btn btn-primary" {{action "createSession"}}>Create</button>
+      <button class="btn btn-primary" {{action "createSession"}}>Create</button>
     {{/suppose-dialog}}
   </script>
 
@@ -126,7 +126,7 @@
         {{input required="true" class="form-control" placeholder="Your nickname" value=nickname}}
         {{input required="true" class="form-control" action="joinSession" placeholder="Enter session token" value=sessionToken}}
       </div>
-      <button id="joinSession" class="btn btn-primary" {{action "joinSession"}}>Join</button>
+      <button class="btn btn-primary" {{action "joinSession"}}>Join</button>
     {{/suppose-dialog}}
   </script>
 
@@ -135,7 +135,16 @@
       <div class="form-group">
         {{input required="true" class="form-control" action="startCountdown" placeholder="Countdown in minutes" value=idleTimeout}}
       </div>
-      <button id="startCountdown" class="btn btn-primary" {{action "startCountdown"}}>Start</button>
+      <button class="btn btn-primary" {{action "startCountdown"}}>Start</button>
+    {{/suppose-dialog}}
+  </script>
+
+  <script type="text/x-handlebars" id="startEstimationRound">
+    {{#suppose-dialog title="Start Estimation Round" action="closeDialog"}}
+      <div class="form-group">
+        {{input required="true" class="form-control" action="startEstimationRound" placeholder="Estimation timeout in seconds" value=estimateTimeout}}
+      </div>
+      <button class="btn btn-primary" {{action "startEstimationRound"}}>Start</button>
     {{/suppose-dialog}}
   </script>
 

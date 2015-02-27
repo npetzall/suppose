@@ -55,7 +55,7 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start a countdown in planning session: " + users[socket.id].sessionToken + "which does not exist");
       }
     });
-    socket.on('startEstimate', function(data) {
+    socket.on('startEstimationRound', function(data) {
       var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
       if (planningSession) {
         if (planningSession.isHost(users[socket.id])) {
@@ -63,10 +63,10 @@ io.on('connection', function (socket) {
           io.to(planningSession.sessionToken).emit('startEstimate', data);
           console.log("Starting Estimation round in session: " + planningSession.sessionToken);
         } else {
-          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start an estimate round in planning session: "+planningSession.sessionToken+" but is not the host");
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start an estimation round in planning session: "+planningSession.sessionToken+" but is not the host");
         }
       } else {
-        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start an estimate round in planning session: " + users[socket.id].sessionToken + "which does not exist");
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start an estimation round in planning session: " + users[socket.id].sessionToken + "which does not exist");
       }
     });
     socket.on('estimate', function(estimate, fn) {

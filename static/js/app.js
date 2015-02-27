@@ -124,7 +124,7 @@ SupposeApp.JoinPlanningSessionController = Ember.Controller.extend({
 SupposeApp.ParticipantController = Ember.Controller.extend({
   needs: 'session',
   idleTimeout: '',
-  estimateTimeout: null,
+  estimateTimeout: '',
   estimateResults: null,
   isHost: Ember.computed.alias('controllers.session.isHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
@@ -185,6 +185,23 @@ SupposeApp.CountdownController = Ember.Controller.extend({
       }
 
       this.socket.emit('startCountdown', parseInt(idleTimeout));
+      this.send('closeDialog');
+    }
+  }
+});
+
+SupposeApp.StartEstimationRoundController = Ember.Controller.extend({
+  needs: 'participant',
+  estimateTimeout: Ember.computed.alias('controllers.participant.estimateTimeout'),
+  actions: {
+    startEstimationRound: function() {
+      var estimateTimeout = this.get('estimateTimeout');
+
+      if (!estimateTimeout && !estimateTimeout.trim()) {
+        return;
+      }
+
+      this.socket.emit('startEstimationRound', parseInt(estimateTimeout));
       this.send('closeDialog');
     }
   }
