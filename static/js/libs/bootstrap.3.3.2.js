@@ -1156,10 +1156,7 @@ if (typeof jQuery === 'undefined') {
       var documentElementRect = document.documentElement.getBoundingClientRect()
       fullWindowWidth = documentElementRect.right - Math.abs(documentElementRect.left)
     }
-    console.log("document.body.clientWidth: " + document.body.clientWidth);
-    console.log("fullWindowWidth:" + fullWindowWidth);
     this.bodyIsOverflowing = document.body.clientWidth < fullWindowWidth
-    console.log(this.bodyIsOverflowing);
     this.scrollbarWidth = this.measureScrollbar()
   }
 

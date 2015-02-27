@@ -39,6 +39,10 @@ SupposeApp.DialogView = Ember.View.extend({
   classNames: ['modal','fade'],
   didInsertElement: function() {
     this.$().modal('show');
+    setTimeout(function(){
+      this.$(":input").first()[0].focus();;
+    }.bind(this), 500);
+
   },
   willDestroyElement: function() {
     this.$().modal('hide');
@@ -117,28 +121,9 @@ SupposeApp.JoinPlanningSessionController = Ember.Controller.extend({
   }
 });
 
-SupposeApp.BecomeHostController = Ember.Controller.extend({
-  needs: 'session',
-  isHost: Ember.computed.alias('controllers.session.isHost'),
-  hostKey: '',
-  actions: {
-    becomeHost: function() {
-      var hostKey = this.get('hostKey');
-      if (!hostKey.trim()) {
-        return;
-      }
-      this.socket.emit('becomeHost', {hostKey: hostKey}, function(isHost) {
-          this.set('isHost', isHost);
-          this.send('closeDialog');
-          this.transitionToRoute('participant');
-      }.bind(this));
-    }
-  }
-})
-
 SupposeApp.ParticipantController = Ember.Controller.extend({
   needs: 'session',
-  countdownTimeout: null,
+  idleTimeout: '',
   estimateTimeout: null,
   estimateResults: null,
   isHost: Ember.computed.alias('controllers.session.isHost'),
@@ -146,9 +131,6 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
   participants: Ember.computed.alias('controllers.session.participants'),
   actions: {
-    startCountdown: function () {
-
-    },
     startEstimate: function() {
       this.socket.emit('startEstimate', 10);
     },
@@ -162,7 +144,7 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
   },
   sockets: {
     startCountdown: function(timeout) {
-      this.set('countdownTimeout', timeout);
+      this.set('idleTimeout', timeout);
       this.transitionToRoute('participantCountdown');
     },
     startEstimate: function(timeout) {
@@ -191,11 +173,32 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
   }
 });
 
+SupposeApp.CountdownController = Ember.Controller.extend({
+  needs: 'participant',
+  idleTimeout: Ember.computed.alias('controllers.participant.idleTimeout'),
+  actions:{
+    startCountdown: function () {
+      var idleTimeout = this.get('idleTimeout');
+
+      if (!idleTimeout && !idleTimeout.trim()) {
+        return;
+      }
+
+      this.socket.emit('startCountdown', parseInt(idleTimeout));
+      this.send('closeDialog');
+    }
+  }
+});
+
+SupposeApp.ParticipantCountdownController = Ember.Controller.extend({
+  needs: 'participant'
+});
+
 SupposeApp.ParticipantEstimateRoute = Ember.Route.extend({
   setupController: function(controller) {
     controller.set('model', ['0', '½', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?' , 'Coffe'])
   }
-})
+});
 
 SupposeApp.ParticipantEstimateController = Ember.Controller.extend({
   needs: 'participant',
@@ -210,8 +213,27 @@ SupposeApp.ParticipantEstimateController = Ember.Controller.extend({
       }.bind(this));
     }
   }
-})
+});
 
 SupposeApp.ParticipantEstimateResultsController = Ember.Controller.extend({
   needs: 'participant'
-})
+});
+
+SupposeApp.BecomeHostController = Ember.Controller.extend({
+  needs: 'session',
+  isHost: Ember.computed.alias('controllers.session.isHost'),
+  hostKey: '',
+  actions: {
+    becomeHost: function() {
+      var hostKey = this.get('hostKey');
+      if (!hostKey.trim()) {
+        return;
+      }
+      this.socket.emit('becomeHost', {hostKey: hostKey}, function(isHost) {
+          this.set('isHost', isHost);
+          this.send('closeDialog');
+          this.transitionToRoute('participant');
+      }.bind(this));
+    }
+  }
+});

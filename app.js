@@ -42,16 +42,17 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + data.nickname + " tried to access planning session with token: " + data.sessionToken + " which doesnt exist");
       }
     });
-    socket.on('becomeHost', function(data, fn) {
-      if (data || data.hostKey) {
-        var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
-        if (planningSession) {
-          fn(planningSession.setNewHost(users[socket.id], data.hostKey));
+    socket.on('startCountdown', function(idleTimeout){
+      var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+      if (planningSession) {
+        if (planningSession.isHost(users[socket.id])) {
+          io.to(planningSession.sessionToken).emit('startCountdown', idleTimeout);
+          console.log("Starting "+ idleTimeout +" minute Countdown in session: " + planningSession.sessionToken);
         } else {
-          fn(false);
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start a countdown in planning session: "+planningSession.sessionToken+" but is not the host");
         }
       } else {
-        fn(false);
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start a countdown in planning session: " + users[socket.id].sessionToken + "which does not exist");
       }
     });
     socket.on('startEstimate', function(data) {
@@ -75,6 +76,18 @@ io.on('connection', function (socket) {
       } else {
         fn({error: "noPlanningSession", msg:"The planning session has expired or does not exists"})
         console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to make an estimate in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
+      }
+    });
+    socket.on('becomeHost', function(data, fn) {
+      if (data || data.hostKey) {
+        var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+        if (planningSession) {
+          fn(planningSession.setNewHost(users[socket.id], data.hostKey));
+        } else {
+          fn(false);
+        }
+      } else {
+        fn(false);
       }
     });
     socket.on('leave', function() {

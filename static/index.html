@@ -48,7 +48,7 @@
         <div class="collapse navbar-collapse" id="navbar-menu">
           <ul class="nav navbar-nav">
             {{#if controllers.session.isHost}}
-            <li><a href="#" {{action "startCountdown"}} >Start countdown</a></li>
+            <li><a href="#" {{action "showDialog" "countdown"}} >Start countdown</a></li>
             <li><a href="#" {{action "startEstimate"}} >Start estimating</a></li>
             {{/if}}
             <li class="dropdown">
@@ -74,6 +74,7 @@
 
   <script type="text/x-handlebars" id="participantCountdown">
     <h1>ParticipantCountdown</h1>
+    <p>{{controllers.participant.idleTimeout}} minutes</p>
   </script>
 
   <script type="text/x-handlebars" id="participantEstimate">
@@ -129,19 +130,22 @@
     {{/suppose-dialog}}
   </script>
 
-  <script type="text/x-handlebars" id="becomeHost">
-    <div class="modal-dialog modal-sm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="button close btn-dismiss" {{action 'closeDialog'}}>x</div>
-          <h4 class="modal-title">Become host</h4>
-        </div>
-
-        <div class="modal-body">
-          {{input type="text" id="hostKey" placeholder="Enter host key" action="becomeHost" value=hostKey autofocus="true"}}
-        </div>
+  <script type="text/x-handlebars" id="countdown">
+    {{#suppose-dialog title="Start a countdown" action="closeDialog"}}
+      <div class="form-group">
+        {{input required="true" class="form-control" action="startCountdown" placeholder="Countdown in minutes" value=idleTimeout}}
       </div>
-    </div>
+      <button id="startCountdown" class="btn btn-primary" {{action "startCountdown"}}>Start</button>
+    {{/suppose-dialog}}
+  </script>
+
+  <script type="text/x-handlebars" id="becomeHost">
+    {{#suppose-dialog title="Become host" action="closeDialog"}}
+      <div class="form-group">
+        {{input required="true" class="form-control" action="becomeHost" placeholder="Enter host key" value=hostKey}}
+      </div>
+      <button class="btn btn-primary" {{action "becomeHost"}}>Become host</button>
+    {{/suppose-dialog}}
   </script>
 
   <script src="/socket.io/socket.io.js"></script>
