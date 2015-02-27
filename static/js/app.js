@@ -19,24 +19,49 @@ SupposeApp.Router.map(function () {
 
 SupposeApp.ApplicationRoute = Ember.Route.extend({
   actions: {
-    showBecomeHost: function () {
-      return this.render('becomeHost', {into: 'participant', outlet: 'modal'});
+    showDialog: function (dialogName) {
+      return this.render(dialogName, {
+        into: 'application',
+        outlet: 'dialog',
+        view: 'dialog',
+        controller: dialogName
+        });
     },
-    closeBecomeHost: function() {
-      return this.disconnectOutlet({outlet: 'modal', parentView: 'participant'});
+    closeDialog: function() {
+      return this.disconnectOutlet({outlet: 'dialog', parentView: 'application'});
+    }
+  }
+});
+
+SupposeApp.DialogView = Ember.View.extend({
+  attributeBindings: ['data-backdrop'],
+  'data-backdrop': 'static',
+  classNames: ['modal','fade'],
+  didInsertElement: function() {
+    this.$().modal('show');
+  },
+  willDestroyElement: function() {
+    this.$().modal('hide');
+  }
+});
+
+SupposeApp.SupposeDialogComponent = Ember.Component.extend({
+  actions: {
+    closeDialog: function() {
+      return this.sendAction();
     }
   }
 });
 
 SupposeApp.SessionController = Ember.Controller.extend({
-  nickname: null,
+  nickname: '',
   isHost: false,
   hasHost: true,
-  sessionToken: null,
+  sessionToken: '',
   participants: Ember.ArrayProxy.create({content: []})
-})
+});
 
-SupposeApp.StartSessionController = Ember.Controller.extend({
+SupposeApp.CreatePlanningSessionController = Ember.Controller.extend({
   needs: 'session',
   nickname: Ember.computed.alias('controllers.session.nickname'),
   isHost: Ember.computed.alias('controllers.session.isHost'),
@@ -44,7 +69,7 @@ SupposeApp.StartSessionController = Ember.Controller.extend({
   hostKey: '',
   participants: Ember.computed.alias('controllers.session.participants'),
   actions: {
-    startSession: function() {
+    createSession: function() {
       var nickname = this.get('nickname');
       var hostKey = this.get('hostKey');
 
@@ -56,13 +81,14 @@ SupposeApp.StartSessionController = Ember.Controller.extend({
         this.set('isHost', data.isHost);
         this.set('sessionToken', data.sessionToken);
         this.get('participants').set('content', data.participants);
+        this.send('closeDialog');
         this.transitionToRoute('participant');
       }.bind(this));
     }
   }
 });
 
-SupposeApp.JoinSessionController = Ember.Controller.extend({
+SupposeApp.JoinPlanningSessionController = Ember.Controller.extend({
   needs: 'session',
   nickname: Ember.computed.alias('controllers.session.nickname'),
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
@@ -83,6 +109,7 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
         } else {
           this.set('hasHost', data.hasHost);
           this.get('participants').set('content', data.participants);
+          this.send('closeDialog');
           this.transitionToRoute('participant');
         }
       }.bind(this));
@@ -90,22 +117,10 @@ SupposeApp.JoinSessionController = Ember.Controller.extend({
   }
 });
 
-SupposeApp.BecomeHostView = Ember.View.extend({
-  attributeBindings: ['data-backdrop'],
-  'data-backdrop': 'static',
-  classNames: ['modal','fade'],
-  didInsertElement: function() {
-    this.$().modal('show');
-  },
-  willDestroyElement: function() {
-    this.$().modal('hide');
-  }
-});
-
 SupposeApp.BecomeHostController = Ember.Controller.extend({
   needs: 'session',
   isHost: Ember.computed.alias('controllers.session.isHost'),
-  hostKey: null,
+  hostKey: '',
   actions: {
     becomeHost: function() {
       var hostKey = this.get('hostKey');
@@ -114,7 +129,7 @@ SupposeApp.BecomeHostController = Ember.Controller.extend({
       }
       this.socket.emit('becomeHost', {hostKey: hostKey}, function(isHost) {
           this.set('isHost', isHost);
-          this.send('closeBecomeHost');
+          this.send('closeDialog');
           this.transitionToRoute('participant');
       }.bind(this));
     }

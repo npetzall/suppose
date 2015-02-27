@@ -12,31 +12,25 @@
 <body>
   <script type="text/x-handlebars">
     {{outlet}}
+    {{outlet 'dialog'}}
   </script>
 
   <script type="text/x-handlebars" id="index">
-    {{#link-to 'startSession' }}Start Session{{/link-to}}
-    {{#link-to 'joinSession' }}Join Session{{/link-to}}
-  </script>
-
-  <script type="text/x-handlebars" id="startSession">
-    <h1>StartSession</h1>
-    {{input type="text" id="nickname" placeholder="Your nickname" value=nickname}}
-    {{input type="text" id="hostKey" placeholder="Your host key" value=hostKey}}
-    <button id="startSession" {{action "startSession"}}>Start Planning Session</button>
-  </script>
-
-  <script type="text/x-handlebars" id="joinSession">
-    <h1>JoinSession</h1>
-    {{input type="text" id="nickname" placeholder="Your nickname" value=nickname}}
-    {{input type="text" id="sessionToken" placeholder="Enter session token" value=sessionToken}}
-    <button id="joinSession" {{action "joinSession"}}>Join a Planning Session</button>
+    <div class="container" style="margin-top:20px">
+      <div class="jumbotron">
+        <h2>Suppose <small>The online planning poker</small></h2>
+        <p style="font-size:small;">Suppose is a simple service for arragning planning poker when teams are split over multiple locations.</p>
+        <p>
+          <button class="btn btn-primary btn-lg" {{action 'showDialog' 'createPlanningSession'}} >Create Planning Session</button>
+          <button class="btn btn-primary btn-lg" {{action 'showDialog' 'joinPlanningSession'}} >Join Planning Session</button>
+        </p>
+      </div>
+    </div>
   </script>
 
   <script type="text/x-handlebars" id="participant">
     {{partial 'menu'}}
     {{outlet}}
-    {{outlet 'modal'}}
   </script>
 
   <script type="text/x-handlebars" id="menu">
@@ -68,7 +62,7 @@
               </ul>
             </li>
             {{#unless hasHost}}
-            <li><a href="#" {{action "showBecomeHost"}} >Become host</a></li>
+            <li><a href="#" {{action "showDialog" "becomeHost"}} >Become host</a></li>
             {{/unless}}
             <li><a href="#" {{action "requestBreak"}} >Request a break</a></li>
             <li><a href="#" {{action "leave"}} >Leave</a></li>
@@ -96,11 +90,50 @@
     {{/each}}
   </script>
 
+  <!-- Dialog Component -->
+
+  <script type="text/x-handlebars" id="components/suppose-dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="button close btn-dismiss" {{action 'closeDialog'}}>x</div>
+          <h4 class="modal-title">{{title}}</h4>
+        </div>
+
+        <div class="modal-body">
+          {{yield}}
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <!-- Dialogs -->
+
+  <script type="text/x-handlebars" id="createPlanningSession">
+    {{#suppose-dialog title="Create Planning Session" action="closeDialog"}}
+      <div class="form-group">
+        {{input required="true" class="form-control" placeholder="Your nickname" value=nickname}}
+        {{input required="true" class="form-control" action="createSession" placeholder="Enter host key" value=hostKey}}
+      </div>
+      <button id="createSession" class="btn btn-primary" {{action "createSession"}}>Create</button>
+    {{/suppose-dialog}}
+  </script>
+
+  <script type="text/x-handlebars" id="joinPlanningSession">
+    {{#suppose-dialog title="Join Planning Session" action="closeDialog"}}
+      <div class="form-group">
+        {{input required="true" class="form-control" placeholder="Your nickname" value=nickname}}
+        {{input required="true" class="form-control" action="joinSession" placeholder="Enter session token" value=sessionToken}}
+      </div>
+      <button id="joinSession" class="btn btn-primary" {{action "joinSession"}}>Join</button>
+    {{/suppose-dialog}}
+  </script>
+
   <script type="text/x-handlebars" id="becomeHost">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="button close btn-dismiss" {{action 'closeBecomeHost'}}>x</div>
+          <div class="button close btn-dismiss" {{action 'closeDialog'}}>x</div>
           <h4 class="modal-title">Become host</h4>
         </div>
 
@@ -116,8 +149,11 @@
   <script src="js/libs/ember-template-compiler-1.10.0.js"></script>
   <script src="js/libs/ember-1.10.0.debug.js"></script>
   <script src="js/libs/ember-sockets-0.6.10.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/libs/bootstrap.3.3.2.js"></script>
+  <!-- Would like to use CDN but it contains a bug, waiting for 3.3.3
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  -->
+  <script src="js/app.js"></script>
   <!-- to activate the test runner, add the "?test" query string parameter -->
   <script src="tests/runner.js"></script>
 </body>
