@@ -23,9 +23,7 @@ SupposeApp.ApplicationRoute = Ember.Route.extend({
     showDialog: function (dialogName) {
       return this.render(dialogName, {
         into: 'application',
-        outlet: 'dialog',
-        view: 'dialog',
-        controller: dialogName
+        outlet: 'dialog'
         });
     },
     closeDialog: function() {
@@ -34,27 +32,23 @@ SupposeApp.ApplicationRoute = Ember.Route.extend({
   }
 });
 
-SupposeApp.DialogView = Ember.View.extend({
-  attributeBindings: ['data-backdrop'],
-  'data-backdrop': 'static',
-  classNames: ['modal','fade'],
-  didInsertElement: function() {
-    this.$().modal('show');
-    setTimeout(function(){
-      this.$(":input").first()[0].focus();;
-    }.bind(this), 500);
-
-  },
-  willDestroyElement: function() {
-    this.$().modal('hide');
-  }
-});
-
 SupposeApp.SupposeDialogComponent = Ember.Component.extend({
   actions: {
     closeDialog: function() {
       return this.sendAction();
     }
+  },
+  didInsertElement: function() {
+    this.$('.modal').on('shown.bs.modal', function () {
+      this.$(":input").first()[0].focus();
+    }.bind(this));
+    this.$('.modal').on('hidden.bs.modal', function() {
+      this.send('closeDialog');
+    }.bind(this))
+    this.$('.modal').modal('show');
+  },
+  willDestroyElement: function() {
+    this.$().modal('hide');
   }
 });
 

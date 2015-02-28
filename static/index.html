@@ -117,15 +117,17 @@
   <!-- Dialog Component -->
 
   <script type="text/x-handlebars" id="components/suppose-dialog">
-    <div class="modal-dialog modal-sm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="button close btn-dismiss" {{action 'closeDialog'}}>x</div>
-          <h4 class="modal-title">{{title}}</h4>
-        </div>
+    <div class="modal fade" data-backdrop="static">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="button close btn-dismiss" {{action 'closeDialog'}}>x</div>
+            <h4 class="modal-title">{{title}}</h4>
+          </div>
 
-        <div class="modal-body">
-          {{yield}}
+          <div class="modal-body">
+            {{yield}}
+          </div>
         </div>
       </div>
     </div>
