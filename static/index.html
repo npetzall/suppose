@@ -52,7 +52,7 @@
             <li><a href="#" {{action "showDialog" "startEstimationRound"}} >Start estimating</a></li>
             {{/if}}
             <li class="dropdown">
-              <a href="#" class="dopdown-toggle" data-toggle="dropdown" role="button">Participants
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Participants
                 <span class="badge">{{participants.length}}</span>
               </a>
               <ul class="dropdown-menu" role="menu">
@@ -64,7 +64,24 @@
             {{#unless hasHost}}
             <li><a href="#" {{action "showDialog" "becomeHost"}} >Become host</a></li>
             {{/unless}}
-            <li><a href="#" {{action "requestBreak"}} >Request a break</a></li>
+            {{#if controllers.session.isHost}}
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Request a break
+                  {{#if noWantsBreak}}
+                    <span class="badge">{{noWantsBreak}}</span>
+                  {{/if}}
+                </a>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#" {{action "showDialog" "haveBreak"}} >Have break</a></li>
+                </ul>
+              </li>
+            {{else}}
+              <li><a href="#" {{action "requestBreak"}} >Request a break
+                {{#if noWantsBreak}}
+                  <span class="badge">{{noWantsBreak}}</span>
+                {{/if}}
+                </a></li>
+            {{/if}}
             <li><a href="#" {{action "leave"}} >Leave</a></li>
           </ul>
         </div>
@@ -89,6 +106,11 @@
     {{#each item in controllers.participant.estimateResults.values}}
       {{log 'item is' item}}
     {{/each}}
+  </script>
+
+  <script type="text/x-handlebars" id="participantBreak">
+    <h1>ParticipantEstimateBreak</h1>
+    <p>{{controllers.participant.breakTimeout}} minutes</p>
   </script>
 
   <!-- Dialog Component -->
@@ -154,6 +176,15 @@
         {{input required="true" class="form-control" action="becomeHost" placeholder="Enter host key" value=hostKey}}
       </div>
       <button class="btn btn-primary" {{action "becomeHost"}}>Become host</button>
+    {{/suppose-dialog}}
+  </script>
+
+  <script type="text/x-handlebars" id="haveBreak">
+    {{#suppose-dialog title="Have a break" action="closeDialog"}}
+      <div class="form-group">
+        {{input required="true" class="form-control" action="haveBreak" placeholder="Break for number of minutes" value=breakTimeout}}
+      </div>
+      <button class="btn btn-primary" {{action "haveBreak"}}>Have a break</button>
     {{/suppose-dialog}}
   </script>
 

@@ -14,6 +14,7 @@ SupposeApp.Router.map(function () {
     this.resource('participantCountdown');
     this.resource('participantEstimate');
     this.resource('participantEstimateResults');
+    this.resource('participantBreak');
   });
 });
 
@@ -62,7 +63,9 @@ SupposeApp.SessionController = Ember.Controller.extend({
   isHost: false,
   hasHost: true,
   sessionToken: '',
-  participants: Ember.ArrayProxy.create({content: []})
+  participants: Ember.ArrayProxy.create({content: []}),
+  noWantsBreak: 0,
+  wantsBreak: false
 });
 
 SupposeApp.CreatePlanningSessionController = Ember.Controller.extend({
@@ -72,6 +75,7 @@ SupposeApp.CreatePlanningSessionController = Ember.Controller.extend({
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   hostKey: '',
   participants: Ember.computed.alias('controllers.session.participants'),
+  noWantsBreak: Ember.computed.alias('controllers.session.noWantsBreak'),
   actions: {
     createSession: function() {
       var nickname = this.get('nickname');
@@ -85,6 +89,7 @@ SupposeApp.CreatePlanningSessionController = Ember.Controller.extend({
         this.set('isHost', data.isHost);
         this.set('sessionToken', data.sessionToken);
         this.get('participants').set('content', data.participants);
+        this.set('noWantsBreak', data.noWantsBreak);
         this.send('closeDialog');
         this.transitionToRoute('participant');
       }.bind(this));
@@ -98,6 +103,7 @@ SupposeApp.JoinPlanningSessionController = Ember.Controller.extend({
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   participants: Ember.computed.alias('controllers.session.participants'),
+  noWantsBreak: Ember.computed.alias('controllers.session.noWantsBreak'),
   actions: {
     joinSession: function() {
       var nickname = this.get('nickname');
@@ -113,6 +119,7 @@ SupposeApp.JoinPlanningSessionController = Ember.Controller.extend({
         } else {
           this.set('hasHost', data.hasHost);
           this.get('participants').set('content', data.participants);
+          this.set('noWantsBreak', data.noWantsBreak);
           this.send('closeDialog');
           this.transitionToRoute('participant');
         }
@@ -126,19 +133,29 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
   idleTimeout: '',
   estimateTimeout: '',
   estimateResults: null,
+  breakTimeout: '',
   isHost: Ember.computed.alias('controllers.session.isHost'),
   sessionToken: Ember.computed.alias('controllers.session.sessionToken'),
   hasHost: Ember.computed.alias('controllers.session.hasHost'),
   participants: Ember.computed.alias('controllers.session.participants'),
+  noWantsBreak: Ember.computed.alias('controllers.session.noWantsBreak'),
+  wantsBreak: Ember.computed.alias('controllers.session.wantsBreak'),
   actions: {
     startEstimate: function() {
       this.socket.emit('startEstimate', 10);
+    },
+    requestBreak: function() {
+      var wantsBreak = this.get('wantsBreak');
+      this.socket.emit('requestBreak', !wantsBreak);
+      this.set('wantsBreak', !wantsBreak);
     },
     leave: function() {
       this.socket.emit('leave');
       this.set('isHost', false);
       this.set('sessionToken', null);
       this.get('participants').clear();
+      this.set('noWantsBreak',0);
+      this.set('wantsBreak', false);
       this.transitionToRoute('index');
     }
   },
@@ -169,6 +186,15 @@ SupposeApp.ParticipantController = Ember.Controller.extend({
           console.log("Unknown changeType: " + data.changeType);
         }
       }
+    },
+    requestBreakUpdate: function(noWantsBreak) {
+      this.set('noWantsBreak', noWantsBreak);
+    },
+    haveBreak: function(timeout) {
+      this.set('wantsBreak', false);
+      this.set('noWantsBreak',0);
+      this.set('breakTimeout', timeout);
+      this.transitionToRoute('participantBreak');
     }
   }
 });
@@ -253,4 +279,23 @@ SupposeApp.BecomeHostController = Ember.Controller.extend({
       }.bind(this));
     }
   }
+});
+
+SupposeApp.HaveBreakController = Ember.Controller.extend({
+  needs: 'participant',
+  breakTimeout: Ember.computed.alias('controllers.participant.breakTimeout'),
+  actions: {
+    haveBreak: function() {
+      var breakTimeout = this.get('breakTimeout');
+      if (!breakTimeout && !breakTimeout.trim()) {
+        return;
+      }
+      this.socket.emit('haveBreak', parseInt(breakTimeout));
+      this.send('closeDialog');
+    }
+  }
+});
+
+SupposeApp.ParticipantBreakController = Ember.Controller.extend({
+  needs: 'participant'
 });

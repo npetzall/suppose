@@ -16,13 +16,15 @@ var users = {};
 io.on('connection', function (socket) {
       console.log("Connected: " + socket.id);
       users[socket.id] = { id: socket.id };
+
     socket.on('startSession', function(data, fn) {
       users[socket.id] = planningSessionStore.createPlanningSession(users[socket.id], data);
       var sessionToken = users[socket.id].sessionToken;
       socket.join(sessionToken);
-      fn({isHost:true, sessionToken: sessionToken, participants: [users[socket.id].nickname] });
+      fn({isHost:true, sessionToken: sessionToken, participants: [users[socket.id].nickname], noWantsBreak: 0});
       console.log("Planning session: " + sessionToken +  " started by: " + users[socket.id].nickname);
     });
+
     socket.on('joinSession', function(data, fn) {
       var planningSession = planningSessionStore.getPlanningSession(data.sessionToken);
       if (planningSession) {
@@ -31,7 +33,7 @@ io.on('connection', function (socket) {
           users[socket.id].nickname = data.nickname;
           planningSession.addParticipant(users[socket.id]);
           socket.join(planningSession.sessionToken);
-          fn(null, { hasHost:planningSession.hasHost(), participants: planningSession.getParticipantNicknames() });
+          fn(null, { hasHost:planningSession.hasHost(), participants: planningSession.getParticipantNicknames(), noWantsBreak: planningSession.wantsBreak.length });
           console.log("Connection: " + socket.id + "/" + data.nickname + " joined planning session with token: " + data.sessionToken);
         } else {
           fn({error: "nicknameInUser", msg:"The nickname you have entered is already in use, enter another nickname"})
@@ -42,6 +44,7 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + data.nickname + " tried to access planning session with token: " + data.sessionToken + " which doesnt exist");
       }
     });
+
     socket.on('startCountdown', function(idleTimeout){
       var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
       if (planningSession) {
@@ -55,6 +58,7 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start a countdown in planning session: " + users[socket.id].sessionToken + "which does not exist");
       }
     });
+
     socket.on('startEstimationRound', function(data) {
       var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
       if (planningSession) {
@@ -69,6 +73,7 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start an estimation round in planning session: " + users[socket.id].sessionToken + "which does not exist");
       }
     });
+
     socket.on('estimate', function(estimate, fn) {
       var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
       if (planningSession) {
@@ -78,32 +83,55 @@ io.on('connection', function (socket) {
         console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to make an estimate in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
       }
     });
+
     socket.on('becomeHost', function(data, fn) {
-      if (data || data.hostKey) {
-        var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
-        if (planningSession) {
-          fn(planningSession.setNewHost(users[socket.id], data.hostKey));
-        } else {
-          fn(false);
-        }
+      var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+      if (planningSession) {
+        fn(planningSession.setNewHost(users[socket.id], data.hostKey));
       } else {
         fn(false);
       }
     });
-    socket.on('leave', function() {
-      if (users[socket.id].sessionToken) {
-        var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
-        if (planningSession) {
-          planningSession.removeParticipant(users[socket.id]);
-          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " left planning session with token: " + planningSession.sessionToken);
+
+    socket.on('requestBreak', function(wantsBreak) {
+      var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+      if (planningSession) {
+        planningSession.requestBreak(users[socket.id], wantsBreak);
+        if (wantsBreak) {
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " requested a break in planning session with token: " + planningSession.sessionToken);
         } else {
-          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to leave planning session with token: " + users[socket.id].sessionToken + " which does not exist");
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " UNrequested a break in planning session with token: " + planningSession.sessionToken);
         }
-        delete users[socket.id].sessionToken;
       } else {
-        console.log("Connection: " + socket.id + " tried to leave planning session but user doesn't have a sessionToken");
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried requested a break in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
       }
     });
+
+    socket.on('haveBreak', function(timeout) {
+      var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+      if (planningSession) {
+        if (planningSession.isHost(users[socket.id])) {
+          planningSession.haveBreak(timeout);
+          console.log("Having a break in session: " + planningSession.sessionToken);
+        } else {
+          console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to have a break in planning session: "+planningSession.sessionToken+" but is not the host");
+        }
+      } else {
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to have a break in planning session with token: " + users[socket.id].sessionToken + " which does not exist");
+      }
+    });
+
+    socket.on('leave', function() {
+      var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
+      if (planningSession) {
+        planningSession.removeParticipant(users[socket.id]);
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " left planning session with token: " + planningSession.sessionToken);
+      } else {
+        console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to leave planning session with token: " + users[socket.id].sessionToken + " which does not exist");
+      }
+      delete users[socket.id].sessionToken;
+    });
+
     socket.on('disconnect', function() {
       if (users[socket.id].sessionToken) {
         planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
