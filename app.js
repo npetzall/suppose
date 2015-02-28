@@ -63,9 +63,12 @@ io.on('connection', function (socket) {
       var planningSession = planningSessionStore.getPlanningSession(users[socket.id].sessionToken);
       if (planningSession) {
         if (planningSession.isHost(users[socket.id])) {
-          planningSession.startEstimating(data);
-          io.to(planningSession.sessionToken).emit('startEstimate', data);
-          console.log("Starting Estimation round in session: " + planningSession.sessionToken);
+          if(planningSession.isEstimating()) {
+            console.log("Already estimating in planning session: " + planningSession.sessionToken);
+          } else {
+            planningSession.startEstimating(data);
+            console.log("Starting Estimation round in planning session: " + planningSession.sessionToken);
+          }
         } else {
           console.log("Connection: " + socket.id + "/" + users[socket.id].nickname + " tried to start an estimation round in planning session: "+planningSession.sessionToken+" but is not the host");
         }
