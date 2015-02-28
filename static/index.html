@@ -95,10 +95,11 @@
   </script>
 
   <script type="text/x-handlebars" id="participantEstimate">
-    <h1>ParticipantEstimate</h1>
-    {{#each val in model}}
-      <button {{action "estimate" val}}>{{val}}</button>
-    {{/each}}
+    <div class="container well">
+      {{#each val in model}}
+        <button class="col-sm-3 col-xs-6 btn btn-info item" {{action "estimate" val}}><span class="estimate-badge">{{val}}</span></button>
+      {{/each}}
+    </div>
   </script>
 
   <script type="text/x-handlebars" id="participantEstimateResults">
