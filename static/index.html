@@ -96,13 +96,8 @@
 
   <script type="text/x-handlebars" id="participantEstimate">
     <div class="container well">
-      <h1 class="col-sm-offset-4">
-        <span class="glyphicon glyphicon-tasks" aria-hidden="true"/>
-        <span>ParticipantEstimate</span>
-      </h1>
-      <hr />
       {{#each val in model}}
-        <button class="col-sm-3 col-xs-12 btn btn-info item" {{action "estimate" val}}><span class="estimate-badge">{{val}}</span></button>
+        <button class="col-sm-3 col-xs-6 btn btn-info item" {{action "estimate" val}}><span class="estimate-badge">{{val}}</span></button>
       {{/each}}
     </div>
   </script>
