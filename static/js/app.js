@@ -239,7 +239,7 @@ SupposeApp.ParticipantCountdownController = Ember.Controller.extend({
 
 SupposeApp.ParticipantEstimateRoute = Ember.Route.extend({
   setupController: function(controller) {
-    controller.set('model', ['0', '½', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?' , 'Coffe'])
+    controller.set('model', ['0', '½', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?'])
   }
 });
 

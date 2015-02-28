@@ -1,1 +1,5 @@
 /* Put your CSS here */
+.estimate-badge {
+  font-size: 7em;
+  line-height: 1.4em;
+}
