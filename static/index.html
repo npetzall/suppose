@@ -7,7 +7,10 @@
   <title>Suppose - ScrUm Planning POker SystEm</title>
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/bootstrap.3.3.2.css">
+  <!-- Would like to use CDN but it contains a bug, waiting for 3.3.3
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  -->
 </head>
 <body>
   <script type="text/x-handlebars">
@@ -76,7 +79,7 @@
                 </ul>
               </li>
             {{else}}
-              <li><a href="#" {{action "requestBreak"}} >Request a break
+              <li {{bind-attr class="wantsBreak:active"}}><a href="#" {{action "requestBreak"}} >Request a break
                 {{#if noWantsBreak}}
                   <span class="badge">{{noWantsBreak}}</span>
                 {{/if}}
